@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4
+      author: asgad
+      changes:
+        - addColumn:
+            tableName: transfers
+            columns:
+              - column:
+                  name: balance_after_from
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: true
+
+              - column:
+                  name: balance_after_to
+                  type: DECIMAL(19,2)
+                  constraints:
+                    nullable: true

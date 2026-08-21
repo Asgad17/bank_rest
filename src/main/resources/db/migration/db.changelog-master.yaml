@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - include:
+      file: db/migration/001-initial-schema.yaml
+
+  - include:
+      file: db/migration/002-create-cards.yaml
+
+  - include:
+      file: db/migration/003-create-transfers.yaml
+
+  - include:
+      file: db/migration/004-add-balance-after-to-transfers.yaml

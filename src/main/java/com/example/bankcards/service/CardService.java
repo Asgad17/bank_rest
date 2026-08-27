@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 public interface CardService {
 
     CardResponse findById(Long cardId);
+    Page<CardResponse> findAll(Pageable pageable);
+    Page<CardResponse> findByCurrentUser(CardStatus status, Pageable pageable);
     CardResponse createCard(CardCreateRequest request, Long userId);
     void blockCard(Long cardId);
     void activateCard(Long cardId);

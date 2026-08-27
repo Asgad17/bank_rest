@@ -7,6 +7,7 @@ import com.example.bankcards.entity.User;
 import com.example.bankcards.enums.Role;
 import com.example.bankcards.security.JwtService;
 import com.example.bankcards.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,14 +33,13 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(
-            @RequestBody RegisterRequest request) {
+            @Valid @RequestBody RegisterRequest request) {
 
         User user = new User();
 
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword());
-        user.setRole(Role.valueOf(request.getRole()));
-
+        user.setRole(Role.USER);
         userService.createUser(user);
 
         return ResponseEntity.ok("User created");
@@ -47,7 +47,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
-            @RequestBody LoginRequest request) {
+            @Valid @RequestBody LoginRequest request) {
 
         Authentication authentication =
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(

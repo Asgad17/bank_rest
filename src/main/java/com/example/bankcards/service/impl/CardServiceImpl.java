@@ -16,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import com.example.bankcards.entity.User;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 
@@ -42,14 +41,7 @@ public class CardServiceImpl implements CardService {
                 .orElseThrow(() ->
                         new CardNotFoundException("Card not found"));
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        String username = authentication.getName();
-
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new UserNotFoundException("User not found"));
+        User currentUser = getCurrentUser();
 
         if (currentUser.getRole() == Role.USER
                 && !card.getUser().getId().equals(currentUser.getId())) {
@@ -60,6 +52,35 @@ public class CardServiceImpl implements CardService {
         }
 
         return cardMapper.toResponse(card);
+    }
+
+    @Override
+    public Page<CardResponse> findAll(Pageable pageable) {
+        return cardRepository.findAll(pageable)
+                .map(cardMapper::toResponse);
+    }
+
+    @Override
+    public Page<CardResponse> findByCurrentUser(
+            CardStatus status,
+            Pageable pageable) {
+
+        User currentUser = getCurrentUser();
+
+        Page<Card> cards;
+
+        if (status != null) {
+            cards = cardRepository.findByUserIdAndStatus(
+                    currentUser.getId(),
+                    status,
+                    pageable);
+        } else {
+            cards = cardRepository.findByUserId(
+                    currentUser.getId(),
+                    pageable);
+        }
+
+        return cards.map(cardMapper::toResponse);
     }
 
     @Override
@@ -106,14 +127,7 @@ public class CardServiceImpl implements CardService {
             CardStatus status,
             Pageable pageable) {
 
-        Authentication authentication =
-                SecurityContextHolder.getContext().getAuthentication();
-
-        String username = authentication.getName();
-
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new UserNotFoundException("User not found"));
+        User currentUser = getCurrentUser();
 
         if (currentUser.getRole() == Role.USER
                 && !currentUser.getId().equals(userId)) {
@@ -136,4 +150,14 @@ public class CardServiceImpl implements CardService {
         return cards.map(cardMapper::toResponse);
     }
 
+    private User getCurrentUser() {
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        return userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
+    }
 }

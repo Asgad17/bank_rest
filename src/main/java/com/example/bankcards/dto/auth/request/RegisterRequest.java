@@ -1,10 +1,14 @@
 package com.example.bankcards.dto.auth.request;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class RegisterRequest {
 
+    @NotBlank
     private String username;
+
+    @NotBlank
     private String password;
-    private String role;
 
     public String getUsername() {
         return username;
@@ -20,13 +24,5 @@ public class RegisterRequest {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 }

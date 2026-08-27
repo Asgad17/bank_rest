@@ -17,6 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import com.example.bankcards.entity.User;
+import com.example.bankcards.exception.UserNotFoundException;
+import com.example.bankcards.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,10 +32,16 @@ public class TransferServiceImpl implements TransferService {
 
     private final CardRepository cardRepository;
     private final TransferRepository transferRepository;
+    private final UserRepository userRepository;
 
-    public TransferServiceImpl(CardRepository cardRepository, TransferRepository transferRepository) {
+    public TransferServiceImpl(
+            CardRepository cardRepository,
+            TransferRepository transferRepository,
+            UserRepository userRepository) {
+
         this.cardRepository = cardRepository;
         this.transferRepository = transferRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -46,6 +57,13 @@ public class TransferServiceImpl implements TransferService {
         Card fromCard = cardRepository.findById(request.getFromCardId())
                 .orElseThrow(() ->
                         new CardNotFoundException("Source card not found"));
+
+        User currentUser = getCurrentUser();
+
+        if (!fromCard.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException(
+                    "You can transfer only from your own card");
+        }
 
         Card toCard = cardRepository.findById(request.getToCardId())
                 .orElseThrow(() ->
@@ -100,8 +118,16 @@ public class TransferServiceImpl implements TransferService {
     public Page<TransferResponse> getStatement(Long cardId, LocalDate from, LocalDate to, int page,
             int size) {
 
-        cardRepository.findById(cardId)
-                .orElseThrow(() -> new CardNotFoundException("Card not found"));
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() ->
+                        new CardNotFoundException("Card not found"));
+
+        User currentUser = getCurrentUser();
+
+        if (!card.getUser().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException(
+                    "You can view only your own statement");
+        }
 
         LocalDateTime fromDateTime = from.atStartOfDay();
         LocalDateTime toDateTime = to.plusDays(1).atStartOfDay();
@@ -125,5 +151,16 @@ public class TransferServiceImpl implements TransferService {
                     }
                     return response;
                 });
+    }
+
+    private User getCurrentUser() {
+        String username = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        return userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UserNotFoundException("User not found"));
     }
 }

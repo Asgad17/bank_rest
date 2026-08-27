@@ -1,0 +1,53 @@
+databaseChangeLog:
+  - changeSet:
+      id: 5
+      author: asgad
+      changes:
+
+        - sql:
+            sql: "ALTER TABLE users ADD CONSTRAINT chk_users_role CHECK (role IN ('USER', 'ADMIN'))"
+
+        - sql:
+            sql: "ALTER TABLE cards ADD CONSTRAINT chk_cards_status CHECK (status IN ('ACTIVE', 'BLOCKED', 'EXPIRED'))"
+
+        - sql:
+            sql: "ALTER TABLE cards ADD CONSTRAINT chk_cards_balance CHECK (balance >= 0)"
+
+        - sql:
+            sql: "ALTER TABLE transfers ADD CONSTRAINT chk_transfers_amount CHECK (amount > 0)"
+
+        - sql:
+            sql: "ALTER TABLE transfers ADD CONSTRAINT chk_transfers_different_cards CHECK (from_card_id <> to_card_id)"
+
+        - createIndex:
+            tableName: cards
+            indexName: idx_cards_user_id
+            columns:
+              - column:
+                  name: user_id
+
+        - createIndex:
+            tableName: cards
+            indexName: idx_cards_user_status
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: status
+
+        - createIndex:
+            tableName: transfers
+            indexName: idx_transfers_from_card
+            columns:
+              - column:
+                  name: from_card_id
+
+        - createIndex:
+            tableName: transfers
+            indexName: idx_transfers_to_card
+            columns:
+              - column:
+                  name: to_card_id
+
+        - sql:
+            sql: "CREATE INDEX IF NOT EXISTS idx_transfers_created_at ON transfers(created_at)"

@@ -43,22 +43,26 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/cards/user/**")
+                        .requestMatchers(HttpMethod.GET, "/api/cards/my")
+                        .hasRole("USER")
+
+                        .requestMatchers(HttpMethod.GET, "/api/cards/admin/**")
                         .hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.PATCH, "/api/cards/**")
+                        .requestMatchers(HttpMethod.POST, "/api/cards/admin/**")
                         .hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.DELETE, "/api/cards/**")
+                        .requestMatchers(HttpMethod.PATCH, "/api/cards/admin/**")
                         .hasRole("ADMIN")
 
-                        // USER и ADMIN могут смотреть карты
+                        .requestMatchers(HttpMethod.DELETE, "/api/cards/admin/**")
+                        .hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.GET, "/api/cards/**")
                         .hasAnyRole("USER", "ADMIN")
 
-                        // USER и ADMIN могут работать с переводами
                         .requestMatchers("/api/transfers/**")
-                        .hasAnyRole("USER", "ADMIN")
+                        .hasAnyRole("USER")
 
                         .anyRequest().authenticated()
                 )

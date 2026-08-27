@@ -10,3 +10,6 @@ databaseChangeLog:
 
   - include:
       file: db/migration/004-add-balance-after-to-transfers.yaml
+
+  - include:
+      file: db/migration/005-add-constraints-and-indexes.yaml
